@@ -23,13 +23,13 @@ describe('App Integration Tests', () => {
 
     beforeEach(() => {
         global.fetch = vi.fn((url) => {
-            if (url === '/api/LexiCore/cultures') {
+            if (url === '/api/lexi-core/cultures') {
                 return Promise.resolve({
                     ok: true,
                     json: () => Promise.resolve(mockCultures),
                 });
             }
-            if (url === '/api/LexiCore') {
+            if (url === '/api/lexi-core') {
                 return Promise.resolve({
                     ok: true,
                     json: () => Promise.resolve(mockTranslations),
@@ -48,8 +48,8 @@ describe('App Integration Tests', () => {
     test('fetches data on mount and renders the table', async () => {
         render(<App />);
 
-        expect(global.fetch).toHaveBeenCalledWith('/api/LexiCore/cultures');
-        expect(global.fetch).toHaveBeenCalledWith('/api/LexiCore');
+        expect(global.fetch).toHaveBeenCalledWith('/api/lexi-core/cultures');
+        expect(global.fetch).toHaveBeenCalledWith('/api/lexi-core');
 
         await waitFor(() => expect(screen.getByText('welcome_message')).toBeInTheDocument());
 
