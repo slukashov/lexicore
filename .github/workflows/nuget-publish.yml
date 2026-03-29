@@ -23,7 +23,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '10.x' # Update to 9.x if you upgrade
+        dotnet-version: '10.x'
     - name: Restore .NET Dependencies
       run: dotnet restore
     - name: Build .NET Solution
