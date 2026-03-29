@@ -3,9 +3,6 @@ name: Build, Test, and Publish NuGet
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
 jobs:
   build-test-publish:
     runs-on: ubuntu-latest

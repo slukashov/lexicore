@@ -3,6 +3,7 @@
     <PropertyGroup>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
         <PackageId>lexicore</PackageId>
+        <PackageReadmeFile>../../README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +13,9 @@
         <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.5"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+    </ItemGroup>
     <Target Name="BuildAndEmbedFrontend" BeforeTargets="PrepareForBuild">
         <Exec Command="npm install" WorkingDirectory="ClientApp"/>
         <Exec Command="npm run build" WorkingDirectory="ClientApp"/>
