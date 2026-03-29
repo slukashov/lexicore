@@ -27,10 +27,11 @@ export default function App() {
 
     const fetchCultures = async () => {
         try {
-            const res = await fetch('/api/LexiCore/cultures');
+            const res = await fetch('/api/lexi-core/cultures');
             const data = await res.json();
             setSupportedLanguages(data);
-            if (data.length > 0) setNewEntry(prev => ({...prev, culture: data[0].code}));
+            if (data.length > 0) 
+                setNewEntry(prev => ({...prev, culture: data[0].code}));
         } catch {
             setErrorMessage("Failed to load cultures.");
         }
@@ -38,7 +39,7 @@ export default function App() {
 
     const fetchTranslations = async () => {
         try {
-            const res = await fetch('/api/LexiCore');
+            const res = await fetch('/api/lexi-core');
             setTranslations(await res.json());
         } catch {
             setErrorMessage("Failed to load translations.");
@@ -47,7 +48,7 @@ export default function App() {
 
     const handleSave = async () => {
         setErrorMessage(null);
-        const res = await fetch('/api/LexiCore', {
+        const res = await fetch('/api/lexi-core', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(newEntry)
@@ -65,8 +66,9 @@ export default function App() {
     const handleToggleDeprecated = async (key: string, currentStatus: boolean, e: React.MouseEvent) => {
         e.stopPropagation();
         const entry = translations.find(t => t.key === key);
-        if (!entry) return;
-        await fetch('/api/LexiCore', {
+        if (!entry) 
+            return;
+        await fetch('/api/lexi-core', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({...entry, isDeprecated: !currentStatus})

@@ -3,10 +3,10 @@ name: Build, Test, and Publish NuGet
 on:
   push:
     branches: [ "main" ]
+  pull_request: 
 jobs:
   build-test-publish:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -30,11 +30,17 @@ jobs:
       run: dotnet build --no-restore --configuration Release
     - name: Run C# Tests (xUnit)
       run: dotnet test --no-build --configuration Release --verbosity normal
-    - name: Pack NuGet Package
-      run: >
-        dotnet pack ./src/LexiCore.Nuget/LexiCore.csproj
-        --no-build
-        --configuration Release
-        --output ./nupkgs
-    - name: Push to NuGet.org
-      run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      
+  publish:
+    needs: build-test-publish
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: 
+          dotnet-version: '10.x'   
+      - name: Pack NuGet Package
+        run: dotnet pack ./src/LexiCore.Nuget/LexiCore.csproj --configuration Release --output ./nupkgs
+      - name: Push to NuGet.org
+        run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
