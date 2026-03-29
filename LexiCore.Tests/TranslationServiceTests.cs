@@ -50,7 +50,7 @@ public class TranslationServiceTests
 
     mockDbSet.Received(1).Add(newEntry);
     await _dbContextMock.Received(1).SaveChangesAsync();
-    _cacheMock.Received(1).Remove("LexiCore_hello_en-US");
+    _cacheMock.Received(1).Remove("translations:hello:en-US");
   }
 
   [Fact]
@@ -69,7 +69,7 @@ public class TranslationServiceTests
 
     mockDbSet.DidNotReceiveWithAnyArgs().Add(Arg.Any<Translation>());
     await _dbContextMock.Received(1).SaveChangesAsync();
-    _cacheMock.Received(1).Remove("LexiCore_hello_en-US");
+    _cacheMock.Received(1).Remove("translations:hello:en-US");
   }
 
   [Fact]
@@ -83,7 +83,7 @@ public class TranslationServiceTests
 
     mockDbSet.Received(1).Remove(existingEntry);
     await _dbContextMock.Received(1).SaveChangesAsync();
-    _cacheMock.Received(1).Remove("LexiCore_hello_en-US");
+    _cacheMock.Received(1).Remove("translations:hello:en-US");
   }
 
   [Fact]
