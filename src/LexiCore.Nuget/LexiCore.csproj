@@ -3,7 +3,7 @@
     <PropertyGroup>
         <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
         <PackageId>lexicore</PackageId>
-        <PackageReadmeFile>EADME.md</PackageReadmeFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
