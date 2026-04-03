@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, test, expect, beforeEach } from 'vitest';
-import type {SupportedLanguage} from "../types/SupportedLanguage.tsx";
-import type {GroupedKey} from "../types/GroupedKey.tsx";
-import TranslationTable from "../components/TranslationTable.tsx";
+import '@testing-library/jest-dom/vitest';
+import TranslationTable from "../src/components/TranslationTable";
+import {SupportedLanguage} from "../src/types/SupportedLanguage";
+import {GroupedKey} from "../src/types/GroupedKey";
 
 describe('TranslationTable Component', () => {
     const mockSetFilter = vi.fn();
@@ -51,9 +52,7 @@ describe('TranslationTable Component', () => {
         isTranslated: mockIsTranslated,
     };
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+    beforeEach(() => vi.clearAllMocks());
 
     test('renders the empty state when no keys are provided', () => {
         render(<TranslationTable {...defaultProps} groupedKeys={[]} />);

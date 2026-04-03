@@ -2,7 +2,18 @@ using LexiCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddAuthorization(options =>
+{
+  options.AddPolicy("AdminPolicy", policy =>
+  {
+    // Example: Require the user to be authenticated AND have an "Admin" role
+    policy.RequireAuthenticatedUser();
+    policy.RequireRole("Admin"); 
+        
+    // OR: Require a specific claim
+    // policy.RequireClaim("Department", "IT");
+  });
+});
 // 1. Register Lingo Services
 builder.Services.AddLexiCore(options =>
 {
@@ -13,9 +24,13 @@ builder.Services.AddLexiCore(options =>
   options.SupportedCultures =
   [
     new("en-US"),
+    new("en-PL"),
     new("es-ES"),
     new("fr-FR")
   ];
+  
+  options.RequireAuthorization = false;
+  options.AuthorizationPolicy = "AdminPolicy";
 });
 
 builder.Services.AddControllers();

@@ -36,6 +36,7 @@ public static class LexiCoreSetupExtensions
 
     services.AddScoped<ITranslationService, TranslationService>();
     services.AddSingleton<IStringLocalizerFactory, TranslationStringLocalizerFactory>();
+    services.AddTransient(typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
     return services;
   }
 
@@ -68,9 +69,23 @@ public static class LexiCoreSetupExtensions
   public static IEndpointRouteBuilder MapLexiCoreApi(this IEndpointRouteBuilder endpoints)
   {
     var group = endpoints.MapGroup("/api/lexi-core");
+    
+    var options = endpoints.ServiceProvider.GetRequiredService<Options>();
+    if (options.RequireAuthorization)
+    {
+      if (!string.IsNullOrEmpty(options.AuthorizationPolicy))
+      {
+        group.RequireAuthorization(options.AuthorizationPolicy);
+      }
+      else
+      {
+        group.RequireAuthorization();
+      }
+    }
+    
     group.MapGet("/cultures", (Options opt) => Results.Ok(opt.SupportedCultures.Select(info => new { code = info.Name, name = info.NativeName })));
     group.MapGet(string.Empty, async (ITranslationService s) => Results.Ok(await s.GetAllAsync()));
-    group.MapPost(string.Empty, async (Translation entry, ITranslationService s) =>
+    group.MapPost(string.Empty, async (LexiCoreEntry entry, ITranslationService s) =>
     {
       try
       {

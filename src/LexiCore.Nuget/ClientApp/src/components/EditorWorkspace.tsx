@@ -16,18 +16,16 @@ interface EditorWorkspaceProps {
     handleSave: () => void;
 }
 
-export default function EditorWorkspace({
-                                            theme,
-                                            newEntry,
-                                            setNewEntry,
-                                            supportedLanguages,
-                                            translations,
-                                            setIsEditorOpen,
-                                            handleSave
+export default function EditorWorkspace({theme,
+                                         newEntry,
+                                         setNewEntry,
+                                         supportedLanguages,
+                                         translations,
+                                         setIsEditorOpen,
+                                         handleSave
                                         }: EditorWorkspaceProps) {
     const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
     const [showMockData, setShowMockData] = useState<boolean>(false);
-    const [mockData, setMockData] = useState<string>('{\n  \n}');
     const [liveError, setLiveError] = useState<string | null>(null);
     const [previewHtml, setPreviewHtml] = useState<string>('');
 
@@ -35,7 +33,7 @@ export default function EditorWorkspace({
         if (!isPreviewMode) return;
         const timeoutId = setTimeout(async () => {
             try {
-                const parsed = JSON.parse(mockData || '{}');
+                const parsed = JSON.parse(newEntry.variablesJson || '{}');
                 const rendered = await engine.parseAndRender(newEntry.value, parsed);
                 setPreviewHtml(rendered);
                 setLiveError(null);
@@ -44,7 +42,7 @@ export default function EditorWorkspace({
             }
         }, 300);
         return () => clearTimeout(timeoutId);
-    }, [newEntry.value, mockData, isPreviewMode]);
+    }, [newEntry.value, newEntry.variablesJson, isPreviewMode]);
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 dark:bg-slate-950 animate-in fade-in duration-200">
@@ -83,7 +81,11 @@ export default function EditorWorkspace({
                     <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1"></div>
 
                     <button
-                        onClick={() => setIsEditorOpen(false)}
+                        onClick={() => {
+                            if (window.confirm('Discard unsaved changes?')) {
+                                setIsEditorOpen(false);
+                            }
+                        }}
                         className="px-6 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 transition shadow-sm"
                     >
                         Discard
@@ -110,9 +112,12 @@ export default function EditorWorkspace({
                                 value={newEntry.key}
                                 onChange={e => {
                                     const newKey = e.target.value;
-                                    setNewEntry({...newEntry, key: newKey});
                                     const existing = translations.find(t => t.key === newKey && t.culture === newEntry.culture);
-                                    if (existing) setNewEntry(existing);
+                                    if (existing) {
+                                        setNewEntry(existing);
+                                    } else {
+                                        setNewEntry(prev => ({...prev, key: newKey}));
+                                    }
                                 }}
                                 placeholder="e.g. auth_error_invalid"
                                 className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition font-mono text-sm shadow-sm dark:text-slate-100"
@@ -126,10 +131,12 @@ export default function EditorWorkspace({
                                 value={newEntry.culture}
                                 onChange={e => {
                                     const newCult = e.target.value;
-                                    setNewEntry({...newEntry, culture: newCult});
                                     const existing = translations.find(t => t.key === newEntry.key && t.culture === newCult);
-                                    if (existing) setNewEntry(existing);
-                                    else setNewEntry(prev => ({...prev, culture: newCult, value: ''}));
+                                    if (existing) {
+                                        setNewEntry({...existing, variablesJson: newEntry.variablesJson});
+                                    } else {
+                                        setNewEntry({...newEntry, culture: newCult, value: ''});
+                                    }
                                 }}
                                 className="w-full px-4 py-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-700 dark:text-slate-200 shadow-sm"
                             >
@@ -178,8 +185,8 @@ export default function EditorWorkspace({
                                     height="100%"
                                     language="json"
                                     theme={theme === 'dark' ? 'vs-dark' : 'light'}
-                                    value={mockData}
-                                    onChange={(value) => setMockData(value || '')}
+                                    value={newEntry.variablesJson || '{\n  \n}'}
+                                    onChange={(value) => setNewEntry(prev => ({...prev, variablesJson: value || '{}'}))}
                                     options={{
                                         minimap: {enabled: false},
                                         fontSize: 13,

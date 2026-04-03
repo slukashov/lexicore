@@ -3,5 +3,6 @@ export interface LexiCoreEntry {
     key: string;
     culture: string;
     value: string;
+    variablesJson?: string;
     isDeprecated: boolean;
 }

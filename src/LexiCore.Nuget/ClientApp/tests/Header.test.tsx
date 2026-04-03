@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, test, expect, beforeEach } from 'vitest';
-import Header from "../components/Header.tsx";
+import '@testing-library/jest-dom/vitest';
+import Header from "../src/components/Header";
+
 
 describe('Header Component', () => {
     const mockToggleTheme = vi.fn();

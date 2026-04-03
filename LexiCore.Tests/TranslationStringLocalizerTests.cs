@@ -1,6 +1,7 @@
 using System.Globalization;
 using LexiCore.Data;
 using LexiCore.Models;
+using LexiCore.Services;
 using LexiCore.Services.Implementations;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,7 @@ public class TranslationStringLocalizerTests : IDisposable
     _serviceProviderMock = Substitute.For<IServiceProvider>();
     _serviceProviderMock.GetService(typeof(IMemoryCache)).Returns(_memoryCache);
     _serviceProviderMock.GetService(typeof(ITranslationDbContext)).Returns(_dbContextMock);
+    _serviceProviderMock.GetService(typeof(Options)).Returns(new Options());
     var scopeMock = Substitute.For<IServiceScope>();
     scopeMock.ServiceProvider.Returns(_serviceProviderMock);
 
@@ -35,10 +37,12 @@ public class TranslationStringLocalizerTests : IDisposable
     _sut = new TranslationStringLocalizer(_scopeFactoryMock);
   }
 
-  private void SetupDatabase(List<Translation> data)
+  private void SetupDatabase(List<Translation> data, List<Metadata>? metadata = null)
   {
     var mockDbSet = data.BuildMockDbSet();
     _dbContextMock.Translations.Returns(mockDbSet);
+    var mockMetadataDbSet = (metadata ?? new List<Metadata>()).BuildMockDbSet();
+    _dbContextMock.KeyMetadatas.Returns(mockMetadataDbSet);
   }
 
   [Fact]
@@ -104,6 +108,54 @@ public class TranslationStringLocalizerTests : IDisposable
     _scopeFactoryMock.Received(3).CreateScope();
     _serviceProviderMock.Received(1).GetService(typeof(ITranslationDbContext));
     Assert.Equal("Test", result.Value);
+  }
+
+  [Fact]
+  public void Indexer_WithDotLiquid_ShouldNotUseMetadataVariables()
+  {
+    SetupDatabase(
+      [new() { Key = "welcome", Culture = "en-US", Value = "Hello {{ name }}!", IsDeprecated = false }],
+      [new() { Key = "welcome", VariablesJson = "{\"name\": \"World\"}" }]
+    );
+
+    var result = _sut["welcome"];
+
+    // The current implementation might return the original string if variables are missing
+    Assert.True(result.Value == "Hello !" || result.Value == "Hello {{ name }}!");
+  }
+
+  [Fact]
+  public void Indexer_WithDotLiquidAndNamedArgs_ShouldRenderUsingPassedObject()
+  {
+    SetupDatabase([new() { Key = "greet", Culture = "en-US", Value = "Welcome, {{ name }}!", IsDeprecated = false }]);
+
+    var result = _sut["greet", new { name = "Alex" }];
+
+    Assert.Equal("Welcome, Alex!", result.Value);
+  }
+
+  [Fact]
+  public void Indexer_WithDotLiquidAndPositionalArgs_ShouldRenderUsingArg0()
+  {
+    SetupDatabase([new() { Key = "greet", Culture = "en-US", Value = "Welcome, {{ arg0 }}!", IsDeprecated = false }]);
+
+    var result = _sut["greet", "Alex"];
+
+    Assert.Equal("Welcome, Alex!", result.Value);
+  }
+
+  [Fact]
+  public void Indexer_WithMixedVariablesAndArgs_ShouldOnlyUseArgs()
+  {
+    SetupDatabase(
+      [new() { Key = "mixed", Culture = "en-US", Value = "{{ prefix }}: {{ arg0 }}", IsDeprecated = false }],
+      [new() { Key = "mixed", VariablesJson = "{\"prefix\": \"User\"}" }]
+    );
+
+    var result = _sut["mixed", "John"];
+
+    // "prefix" from metadata should be ignored
+    Assert.True(result.Value == ": John" || result.Value == "{{ prefix }}: John");
   }
 
   public void Dispose()
