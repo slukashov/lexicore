@@ -8,16 +8,30 @@ using Microsoft.Extensions.Localization;
 
 namespace LexiCore.Services.Implementations;
 
+/// <inheritdoc/>
 internal class TranslationStringLocalizer(IServiceScopeFactory factory) : IStringLocalizer
 {
+  /// <inheritdoc/>
   public LocalizedString this[string name] => GetString(name);
+  
+  /// <inheritdoc/>
   public LocalizedString this[string name, params object[] args] => GetString(name, args);
 
+  /// <inheritdoc/>
   public IEnumerable<LocalizedString> GetAllStrings(bool inc) =>
     GetCachedDict(CultureInfo.CurrentUICulture.Name)
       .Select(pair => new LocalizedString(pair.Key, pair.Value, false))
       .ToList();
 
+  /// <summary>
+  /// Retrieves a localized string based on the given key and optional formatting arguments.
+  /// </summary>
+  /// <param name="name">The key of the string to be localized.</param>
+  /// <param name="args">Optional arguments used for formatting the localized string.</param>
+  /// <returns>
+  /// A <see cref="LocalizedString"/> object containing the localized value if found, or
+  /// the key itself if no translation is available.
+  /// </returns>
   private LocalizedString GetString(string name, params object[]? args)
   {
     var culture = CultureInfo.CurrentUICulture.Name;
@@ -61,6 +75,11 @@ internal class TranslationStringLocalizer(IServiceScopeFactory factory) : IStrin
     return new LocalizedString(name, result, false);
   }
 
+  /// <summary>
+  /// Retrieves a dictionary of translations for the specified culture, utilizing caching for improved performance.
+  /// </summary>
+  /// <param name="culture">The culture identifier for which translations are requested.</param>
+  /// <returns>A dictionary containing translation keys and their corresponding values for the specified culture.</returns>
   private Dictionary<string, string> GetCachedDict(string culture)
   {
     using var scope = factory.CreateScope();

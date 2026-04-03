@@ -5,8 +5,10 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace LexiCore.Services.Implementations;
 
+/// <inheritdoc/>
 internal class TranslationService(ITranslationDbContext context, IMemoryCache cache) : ITranslationService
 {
+  /// <inheritdoc/>
   public async Task<IReadOnlyList<LexiCoreEntry>> GetAllAsync()
   {
     return await context.Translations
@@ -29,6 +31,7 @@ internal class TranslationService(ITranslationDbContext context, IMemoryCache ca
       .ToListAsync();
   }
 
+  /// <inheritdoc/>
   public async Task UpsertAsync(LexiCoreEntry entry)
   {
     var existing = await context.Translations
@@ -69,7 +72,8 @@ internal class TranslationService(ITranslationDbContext context, IMemoryCache ca
     await context.SaveChangesAsync();
     cache.Remove($"translations:{entry.Culture}");
   }
-  
+
+  /// <inheritdoc/>
   public async Task DeleteAsync(string key, string culture)
   {
     var entry = await context.Translations

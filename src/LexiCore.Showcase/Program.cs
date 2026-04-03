@@ -2,19 +2,7 @@ using LexiCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddAuthorization(options =>
-{
-  options.AddPolicy("AdminPolicy", policy =>
-  {
-    // Example: Require the user to be authenticated AND have an "Admin" role
-    policy.RequireAuthenticatedUser();
-    policy.RequireRole("Admin"); 
-        
-    // OR: Require a specific claim
-    // policy.RequireClaim("Department", "IT");
-  });
-});
-// 1. Register Lingo Services
+
 builder.Services.AddLexiCore(options =>
 {
   // Use SQLite for the demo
@@ -24,13 +12,11 @@ builder.Services.AddLexiCore(options =>
   options.SupportedCultures =
   [
     new("en-US"),
-    new("en-PL"),
     new("es-ES"),
     new("fr-FR")
   ];
   
-  options.RequireAuthorization = false;
-  options.AuthorizationPolicy = "AdminPolicy";
+  options.RequireAuthorization = false; // Disable auth for the demo, but consider enabling it in production
 });
 
 builder.Services.AddControllers();
@@ -42,11 +28,10 @@ var app = builder.Build();
 await app.InitializeLexiCoreDatabaseAsync();
 
 // 3. Map the Admin API and UI
-app.MapLexiCoreApi();      // Accessible at /api/lingo
-app.UseLexiCoreUi(); // Accessible at http://localhost:PORT/lingo-admin
+app.MapLexiCoreApi();
+app.UseLexiCoreUi(); // Accessible at http://localhost:PORT/lexi-core-ui
 
 app.UseHttpsRedirection();
-app.UseAuthorization();
 app.MapControllers();
 
 await app.RunAsync();

@@ -11,6 +11,10 @@ using Microsoft.Extensions.Localization;
 
 namespace LexiCore.Extensions;
 
+/// <summary>
+/// Provides extension methods for configuring and initializing the LexiCore library
+/// in an ASP.NET Core application.
+/// </summary>
 public static class LexiCoreSetupExtensions
 {
   /// <summary>
