@@ -31,6 +31,9 @@ public class LexiCoreSetupExtensionsTests
     Assert.NotNull(provider.GetService<ITranslationDbContext>());
     Assert.NotNull(provider.GetService<ITranslationService>());
     Assert.NotNull(provider.GetService<IStringLocalizerFactory>());
+    var localizer = provider.GetService<IStringLocalizer<LexiCoreSetupExtensionsTests>>();
+    Assert.NotNull(localizer);
+    Assert.IsType<StringLocalizer<LexiCoreSetupExtensionsTests>>(localizer);
   }
 
   [Fact]
@@ -76,7 +79,7 @@ public class LexiCoreSetupExtensionsTests
     using var host = await CreateTestHostAsync(mockService, options);
     var client = host.GetTestClient();
 
-    var validEntry = new Translation
+    var validEntry = new LexiCoreEntry
     {
       Key = "welcome",
       Culture = "en-US",
@@ -87,7 +90,7 @@ public class LexiCoreSetupExtensionsTests
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-    await mockService.Received(1).UpsertAsync(Arg.Is<Translation>(translation => translation.Key == "welcome"));
+    await mockService.Received(1).UpsertAsync(Arg.Is<LexiCoreEntry>(translation => translation.Key == "welcome"));
   }
 
   [Fact]
@@ -99,7 +102,7 @@ public class LexiCoreSetupExtensionsTests
     using var host = await CreateTestHostAsync(mockService, options);
     var client = host.GetTestClient();
 
-    var invalidEntry = new Translation
+    var invalidEntry = new LexiCoreEntry
     {
       Key = "broken_template",
       Culture = "en-US",
@@ -113,7 +116,7 @@ public class LexiCoreSetupExtensionsTests
     var errorContent = await response.Content.ReadAsStringAsync();
     Assert.Contains("error", errorContent);
 
-    await mockService.DidNotReceiveWithAnyArgs().UpsertAsync(Arg.Any<Translation>());
+    await mockService.DidNotReceiveWithAnyArgs().UpsertAsync(Arg.Any<LexiCoreEntry>());
   }
 
   [Fact]

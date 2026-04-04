@@ -1,9 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, test, expect, beforeEach } from 'vitest';
-import type {SupportedLanguage} from "../types/SupportedLanguage.tsx";
-import type {LexiCoreEntry} from "../types/LexiCoreEntry.tsx";
-import EditorWorkspace from "../components/EditorWorkspace.tsx";
+import '@testing-library/jest-dom/vitest';
+import {SupportedLanguage} from "../src/types/SupportedLanguage";
+import {LexiCoreEntry} from "../src/types/LexiCoreEntry";
+import EditorWorkspace from "../src/components/EditorWorkspace";
+
 
 vi.mock('@monaco-editor/react', () => {
     return {
@@ -31,6 +33,7 @@ describe('EditorWorkspace Component', () => {
         key: 'test_key',
         culture: 'en-US',
         value: '<div>Hello {{ user }}</div>',
+        variablesJson: '{}',
         isDeprecated: false
     };
 
@@ -53,12 +56,15 @@ describe('EditorWorkspace Component', () => {
         expect(screen.getByText('Editing: test_key')).toBeInTheDocument();
     });
 
-    test('calls setIsEditorOpen(false) when Discard is clicked', async () => {
+    test('calls setIsEditorOpen(false) when Discard is clicked and confirmed', async () => {
         const user = userEvent.setup();
+        const confirmSpy = vi.spyOn(window, 'confirm').mockImplementation(() => true);
         render(<EditorWorkspace {...defaultProps} />);
 
         await user.click(screen.getByText('Discard'));
+        expect(confirmSpy).toHaveBeenCalled();
         expect(mockSetIsEditorOpen).toHaveBeenCalledWith(false);
+        confirmSpy.mockRestore();
     });
 
     test('calls handleSave when Save Changes is clicked', async () => {
